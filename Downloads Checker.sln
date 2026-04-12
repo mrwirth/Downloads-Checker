@@ -6,7 +6,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleUI", "ConsoleUI\ConsoleUI.csproj", "{B32A4959-210C-4B51-90CD-0A405E973B66}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Test", "Common.Test\Common.Test.csproj", "{08E9699B-DE2E-4E5E-ACE6-23FED74C6220}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Tests", "Common.Tests\Common.Tests.csproj", "{08E9699B-DE2E-4E5E-ACE6-23FED74C6220}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
