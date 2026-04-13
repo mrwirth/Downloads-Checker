@@ -29,7 +29,7 @@ public class FindFiles : IFindFiles
         return (files, error);
     }
 
-    private (HashSet<string> files, string? error) GetDirectories(string path)
+    private (HashSet<string> directories, string? error) GetDirectories(string path)
     {
         HashSet<string> directories = [];
         string? error = null;
@@ -54,20 +54,32 @@ public class FindFiles : IFindFiles
         HashSet<string> visited = [];
         var toVisit = new Stack<string>(paths);
 
-        while (toVisit.Any())
+        while (toVisit.Count != 0)
         {
             var path = toVisit.Pop();
 
-            if (visited.Contains(path))
+            var haveVisited = !visited.Add(path);
+            if (haveVisited)
             {
-                // Check if path has already been visit.  If so, log and skip.
+                errors.Add(new FindFilesErrorDto(path, "Already visited this path."));
+                continue;
             }
 
-            var result = GetFiles(path);
-            if (result.error is not null)
-                errors.Add(new FindFilesErrorDto(path, result.error));
+            var newFiles = GetFiles(path);
+            if (newFiles.error is not null)
+                errors.Add(new FindFilesErrorDto(path, newFiles.error));
             else
-                files.UnionWith(result.files);
+                files.UnionWith(newFiles.files);
+
+            if (recursive)
+            {
+                var newDirectories = GetDirectories(path);
+                if (newDirectories.error is not null)
+                    errors.Add(new FindFilesErrorDto(path, newDirectories.error));
+                else
+                    foreach (var directory in newDirectories.directories)
+                        toVisit.Push(directory);
+            }
         }
 
         return new FoundFilesDto(files, errors);
