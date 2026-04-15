@@ -1,7 +1,7 @@
-﻿namespace Common.Discovery;
+﻿using Common.Services;
 
-public record FoundFileDto(string Path);
+namespace Common.Discovery;
 
-public record FindFilesErrorDto(string Directory, string ErrorMessage);
+public record DirectoryEnumerationErrorDto(string DirectoryPath, string ErrorMessage);
 
-public record FoundFilesDto(IEnumerable<FoundFileDto> Files, IEnumerable<FindFilesErrorDto> Errors);
+public record FoundFilesDto(IEnumerable<FileDto> Files, IEnumerable<DirectoryEnumerationErrorDto> Errors);

@@ -1,4 +1,6 @@
-﻿namespace Common.Discovery;
+﻿using Common.Services;
+
+namespace Common.Discovery;
 
 public class FindFiles : IFindFiles
 {
@@ -12,44 +14,11 @@ public class FindFiles : IFindFiles
         throw new NotImplementedException();
     }
 
-    private (HashSet<FoundFileDto> files, string? error) GetFiles(string path)
+
+    private static FoundFilesDto FindFromPaths(IEnumerable<string> paths, bool recursive, IFileService fileService)
     {
-        HashSet<FoundFileDto> files = [];
-        string? error = null;
-
-        try
-        {
-            files = new HashSet<FoundFileDto>(Directory.EnumerateFiles(path).Select(f => new FoundFileDto(f)));
-        }
-        catch (Exception e)
-        {
-            error = e.Message;
-        }
-
-        return (files, error);
-    }
-
-    private (HashSet<string> directories, string? error) GetDirectories(string path)
-    {
-        HashSet<string> directories = [];
-        string? error = null;
-
-        try
-        {
-            directories = new HashSet<string>(Directory.EnumerateDirectories(path));
-        }
-        catch (Exception e)
-        {
-            error = e.Message;
-        }
-
-        return (directories, error);
-    }
-
-    private FoundFilesDto FindFromPaths(IEnumerable<string> paths, bool recursive)
-    {
-        HashSet<FoundFileDto> files = [];
-        HashSet<FindFilesErrorDto> errors = [];
+        HashSet<FileDto> files = [];
+        HashSet<DirectoryEnumerationErrorDto> errors = [];
 
         HashSet<string> visited = [];
         var toVisit = new Stack<string>(paths);
@@ -61,23 +30,23 @@ public class FindFiles : IFindFiles
             var haveVisited = !visited.Add(path);
             if (haveVisited)
             {
-                errors.Add(new FindFilesErrorDto(path, "Already visited this path."));
+                errors.Add(new DirectoryEnumerationErrorDto(path, "Already visited this path."));
                 continue;
             }
 
-            var newFiles = GetFiles(path);
-            if (newFiles.error is not null)
-                errors.Add(new FindFilesErrorDto(path, newFiles.error));
+            var newFiles = fileService.EnumerateFiles(path);
+            if (newFiles.Error is not null)
+                errors.Add(new DirectoryEnumerationErrorDto(path, newFiles.Error.Message));
             else
-                files.UnionWith(newFiles.files);
+                files.UnionWith(newFiles.FileDtos);
 
             if (recursive)
             {
-                var newDirectories = GetDirectories(path);
-                if (newDirectories.error is not null)
-                    errors.Add(new FindFilesErrorDto(path, newDirectories.error));
+                var newDirectories = fileService.EnumerateDirectories(path);
+                if (newDirectories.Error is not null)
+                    errors.Add(new DirectoryEnumerationErrorDto(path, newDirectories.Error.Message));
                 else
-                    foreach (var directory in newDirectories.directories)
+                    foreach (var directory in newDirectories.DirectoryPaths)
                         toVisit.Push(directory);
             }
         }
